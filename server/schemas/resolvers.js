@@ -4,10 +4,8 @@ const { signToken } = require('../utils/auth');
 
 const resolvers = {
   Query: {
-    getSingleUser: async (parent, { user = null, params }) => {
-      const foundUser = await User.findOne({
-        $or: [{ _id: user ? user._id : params.id }, { username: params.username }],
-      })
+    me: async (parent, { username }) => {
+      const foundUser = await User.findOne(username)
       if (!foundUser) {
         throw new AuthenticationError('Cannot find a user with this id!');
       }
@@ -18,11 +16,6 @@ const resolvers = {
   Mutation: {
     createUser: async (parent, { username, email, password }) => {
       const user = await User.create({ username, email, password });
-      // console.log(user)
-  
-      // if (!user) {
-      //   throw new AuthenticationError('Something is wrong!');
-      // }
       const token = signToken(user);
       return{ token, user };
     },
@@ -39,12 +32,11 @@ const resolvers = {
       const token = signToken(user);
       return { token, user };
     },
-    saveBook: async (parent, { user, body }) => {
-      console.log(user);
+    saveBook: async (parent, { authors, description, title, bookId, image, userId }) => {
         try {
           const updatedUser = await User.findOneAndUpdate(
-            { _id: user._id },
-            { $addToSet: { savedBooks: body } },
+            { _id: userId },
+            { $addToSet: { savedBooks: {authors, description, title, bookId, image} } },
             { new: true, runValidators: true }
           );
           return updatedUser;
