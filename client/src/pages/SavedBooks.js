@@ -8,13 +8,8 @@ import { removeBookId } from '../utils/localStorage';
 
 const SavedBooks = () => {
 
-  const username = Auth.getProfile().data.username
-  console.log(username)
-  const {userData} = useQuery(GET_ME, {variables: {username}});
+  const {loading, data} = useQuery(GET_ME);
   const [removeBook, {error}] = useMutation(REMOVE_BOOK);
-
-  console.log(userData)
-
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
@@ -25,9 +20,10 @@ const SavedBooks = () => {
     }
 
     try {
-      const {data}= await removeBook(bookId, userData);
 
-      if (!data) {
+      const response = await removeBook({variables: {bookId}});
+
+      if (!response.data) {
         throw new Error('something went wrong!');
       }
       // upon success, remove book's id from localStorage
@@ -40,19 +36,23 @@ const SavedBooks = () => {
 
   return (
     <>
+    
       <Jumbotron fluid className='text-light bg-dark'>
         <Container>
           <h1>Viewing saved books!</h1>
         </Container>
       </Jumbotron>
+      {loading ? (
+            <div>Loading...</div>
+          ) : (
       <Container>
         <h2>
-          {userData.savedBooks.length
-            ? `Viewing ${userData.savedBooks.length} saved ${userData.savedBooks.length === 1 ? 'book' : 'books'}:`
+          {data.me.savedBooks.length
+            ? `Viewing ${data.me.savedBooks.length} saved ${data.me.savedBooks.length === 1 ? 'book' : 'books'}:`
             : 'You have no saved books!'}
         </h2>
         <CardColumns>
-          {userData.savedBooks.map((book) => {
+          {data.me.savedBooks.map((book) => {
             return (
               <Card key={book.bookId} border='dark'>
                 {book.image ? <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' /> : null}
@@ -68,7 +68,7 @@ const SavedBooks = () => {
             );
           })}
         </CardColumns>
-      </Container>
+      </Container>)}
     </>
   );
 };

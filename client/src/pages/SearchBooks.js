@@ -3,7 +3,7 @@ import { Jumbotron, Container, Col, Form, Button, Card, CardColumns } from 'reac
 
 import Auth from '../utils/auth';
 import { useMutation } from '@apollo/client';
-import {SAVE_BOOK} from '../utils/mutations'
+import { SAVE_BOOK } from '../utils/mutations'
 import { searchGoogleBooks } from '../utils/API';
 import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
 
@@ -68,10 +68,9 @@ const SearchBooks = () => {
     if (!token) {
       return false;
     }
-    const userId = Auth.getProfile().data._id;
     
     try {
-      const {data} = await saveBook({variables: {...bookToSave, userId}});
+      const {data} = await saveBook({variables: {...bookToSave}});
       if (!data) {
         throw new Error('something went wrong!');
       }
